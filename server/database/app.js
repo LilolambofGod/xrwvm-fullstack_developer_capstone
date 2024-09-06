@@ -10,12 +10,14 @@ app.use(require('body-parser').urlencoded({ extended: false }));
 
 const reviews_data = JSON.parse(fs.readFileSync("reviews.json", 'utf8'));
 const dealerships_data = JSON.parse(fs.readFileSync("dealerships.json", 'utf8'));
-
-mongoose.connect("mongodb://mongo_db:27017/",{'dbName':'dealershipsDB'});
-
+ 
+//mongoose.connect("mongodb://mongo_db:27017/",{'dbName':'dealershipsDB'});
+mongoose.connect("mongodb://mongo_db:27017/dealershipsDB", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
 
 const Reviews = require('./review');
-
 const Dealerships = require('./dealership');
 
 try {
@@ -81,12 +83,13 @@ app.get('/fetchDealers/:state', async (req, res) => {
 // Express route to fetch dealer by a particular id
 app.get('/fetchDealer/:id', async (req, res) => {
   try {
-    const documents = await Dealerships.find({ id: req.params.id});
-    if (!documents) {
-        return res.status (404).jason({ error: 'Dealer not found'});
-    }
+    const documents = await Dealerships.find({dealer_id: req.params.id });
+    if (documents.length === 0) {
+        return res.status(404).json({ error: 'Dealer not found' });
+      }
     res.json(documents);
   } catch (error) {
+    console.error('Error fetching dealer:', error);
     res.status(500).json({ error: 'Error fetching this dealer' });
   }
 });
